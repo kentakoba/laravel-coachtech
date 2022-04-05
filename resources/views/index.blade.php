@@ -6,7 +6,7 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    {{ $user['name'] }}さんお疲れ様です！
+                    {{ $user['name'] }}さんお疲れ様でした！
                 </div>
 
                 <!-- <div>
