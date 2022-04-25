@@ -23,4 +23,23 @@ class Attendance extends Model
 
         return $attendance;
     }
+
+
+    public function user()
+    {
+        // $userid = user::all();
+        return $this->belongsTo('App\User');
+    }
+
+    public static function indexAttendance($attendances)
+    {
+
+        foreach ($attendances as $index => $attendance) {
+            $rests = $attendance->rests;
+            $start_at = new Carbon($attendance->workstart_time);
+            // dd($start_at);
+        }
+        return $attendances;
+    }
+    
 }

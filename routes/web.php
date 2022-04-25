@@ -33,3 +33,5 @@ Route::get('/break/start', [App\Http\Controllers\RestController::class, 'startRe
 
 
 Route::get('/attendance/a', [App\Http\Controllers\AttendanceController::class, 'getAttendance'])->name('getattendance');
+
+Route::post('/attendance/a', [App\Http\Controllers\AttendanceController::class, 'changeDate'])->name('changedate');

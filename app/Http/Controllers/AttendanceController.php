@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Models\Attendance;
-
+use App\Models\User;
+use Carbon\Carbon;
 
 class AttendanceController extends Controller
 {
@@ -81,13 +83,93 @@ class AttendanceController extends Controller
         }
     }
 
+
     public function getAttendance()
     {
-        $attendance = Attendance::select('attendances.*')
-            ->where('work_date', '=', date('y/m/d'))
-            ->get();
-        // dd($attendance);
+        // 以下の記載だと今日で固定されている。
+        $dt = Carbon::today()->format('Y-m-d');
 
-        return view('attendance', compact('attendance'));
+        $attendances = Attendance::select(
+            [
+                'u.name',
+                'a.work_date',
+                'a.workstart_time',
+                'a.workend_time',
+                'a.user_id',
+                Attendance::raw('TIMEDIFF(a.workend_time,a.workstart_time) as work_time'),
+                // 'r.reststart_time',
+                // 'r.restend_time',
+                Attendance::raw('sec_to_time(SUM(TIMEDIFF(r.restend_time,r.reststart_time))) as rest_time'),
+            ]
+        )
+            ->from('attendances as a')
+            ->join('users as u', function ($join) {
+                $join->on('u.id', '=', 'a.user_id');
+            })
+            ->join('rests as r', function ($join) {
+                $join->on('a.id', '=', 'r.attendance_id');
+            })
+            // 以下の記載で本日分を取得できる。
+            ->where('work_date', '=', date('y/m/d'))
+            // 以下、なぜかselectで指定した項目を全て記載すると取得できた
+            ->groupBy('a.user_id', 'u.name', 'a.work_date', 'a.workstart_time', 'a.workend_time')
+            // 一旦ぺージネートを１０行にしている
+            ->paginate(1);
+        // ->get();paginateがgetの代替をする
+        return view('attendance', compact('attendances', 'dt'));
+    }
+
+
+
+    // 日付変更プログラム
+    public function changeDate(Request $request)
+    {
+
+        if ($request->input('before') == 'before') {
+            $dt = date('Y-m-d', strtotime('-1day', strtotime($request->input('date'))));
+        }
+
+        if ($request->input('next') == 'next') {
+            $dt = date('Y-m-d', strtotime('+1day', strtotime($request->input('date'))));
+        }
+
+
+        // dd($dt);
+        // 以下の記載だと今日で固定されている。
+        // $dt = Carbon::today();
+
+
+        $attendances = Attendance::select(
+            [
+                'u.name',
+                'a.work_date',
+                'a.workstart_time',
+                'a.workend_time',
+                'a.user_id',
+                Attendance::raw('TIMEDIFF(a.workend_time,a.workstart_time) as work_time'),
+                // 'r.reststart_time',
+                // 'r.restend_time',
+                Attendance::raw('sec_to_time(SUM(TIMEDIFF(r.restend_time,r.reststart_time))) as rest_time'),
+            ]
+        )
+            ->from('attendances as a')
+            ->join('users as u', function ($join) {
+                $join->on('u.id', '=', 'a.user_id');
+            })
+            ->join('rests as r', function ($join) {
+                $join->on('a.id', '=', 'r.attendance_id');
+            })
+            // 以下の記載で変数の日付をを取得できる。
+            ->where('work_date', '=', $dt)
+            // 以下、なぜかselectで指定した項目を全て記載すると取得できた
+            ->groupBy('a.user_id', 'u.name', 'a.work_date', 'a.workstart_time', 'a.workend_time')
+            // 一旦ぺージネートを１０行にしている
+            ->paginate(1);
+        // ->get();paginateがgetの代替をする
+        // dd($attendances);
+
+        // dd($dt);
+
+        return view('attendance', compact('attendances', 'dt'));
     }
 }

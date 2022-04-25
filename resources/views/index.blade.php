@@ -9,7 +9,7 @@
                     {{ $user['name'] }}さんお疲れ様でした！！！
                 </div>
 
-                <!-- <div>
+                <div>
                     @if(isset($attendance))
 
                     <p>
@@ -46,20 +46,20 @@
                     </form>
 
                     @endif
-                </div> -->
+                </div>
 
 
 
 
 
-                <form action="{{ route('attendancestart' )}}" method="get">
+                <!-- <form action="{{ route('attendancestart' )}}" method="get">
                     <button type="submit">勤務開始</button>
                 </form>
 
                 <form action="{{ route('attendanceend' )}}" method="get">
                     <button type="submit">勤務終了</button>
                 </form>
-
+ -->
 
 
                 <form action="{{ route('startrest')}}" method="get">
